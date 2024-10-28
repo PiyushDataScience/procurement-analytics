@@ -364,7 +364,7 @@ def main():
                 
                 if df_processed is not None and not df_processed.empty:
                     # Generate insights
-                    insights = generate_insights(df_processed)
+                    insights = generate_insights_wwp(df_processed)
                     
                     # Display metrics with enhanced styling
                     st.markdown("<div class='metrics-container'>", unsafe_allow_html=True)
