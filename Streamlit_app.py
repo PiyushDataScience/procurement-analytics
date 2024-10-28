@@ -396,3 +396,218 @@ def create_visualizations_opo(df):
     return [category_fig, vendor_fig, ig_og_fig, timeline_fig]
     pass
 
+def main():
+    
+    st.set_page_config(
+        page_title="Schneider Electric Price Analysis",
+        page_icon="⚡",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+    
+    load_css()
+
+    # Header with logo
+    st.markdown("""
+        <div class="header-container">
+            <img src="https://www.se.com/ww/en/assets/wiztopic/615aeb0184d20b323d58575e/Schneider-Electric-logo-jpg-_original.jpg" 
+                 style="width: 150px; margin-right: 20px;">
+            <div>
+                <h1 style="margin: 0;">Schneider Electric Price Analysis</h1>
+                <p style="color: #3DCD58; margin: 0;">Comprehensive Price Analysis Dashboard</p>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Sidebar for analysis selection
+    analysis_type = st.sidebar.radio(
+        "Select Analysis Type",
+        ["Worldwide Price Analysis", "Open PO Analysis"]
+    )
+            
+    if analysis_type == "Worldwide Price Analysis":
+        st.markdown("<h2>Worldwide Price Analysis</h2>", unsafe_allow_html=True)
+        uploaded_file = st.file_uploader("Upload WWP Data", type=['xlsx', 'csv'])
+
+        if uploaded_file is not None:
+        try:
+            with st.spinner('Processing your data...'):
+                if uploaded_file.name.endswith('.csv'):
+                    df = pd.read_csv(uploaded_file)
+                else:
+                    df = pd.read_excel(uploaded_file)
+                time.sleep(0.5)  # Short delay for visual feedback
+
+            st.success("✅ File uploaded and processed successfully!")
+
+            # Process data
+            df_processed = process_dataframe(df)
+            
+            if df_processed is not None and not df_processed.empty:
+                # Generate insights
+                insights = generate_insights(df_processed)
+                
+                # Display metrics with enhanced styling
+                st.markdown("<div class='metrics-container'>", unsafe_allow_html=True)
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric(
+                        "💰 Total Savings Opportunity",
+                        f"€{abs(insights['total_opportunity']):,.2f}"
+                    )
+                with col2:
+                    st.metric(
+                        "📊 Avg Qty/Projection Ratio",
+                        f"{insights['avg_qty_projection']:.2f}%"
+                    )
+                with col3:
+                    st.metric(
+                        "🔢 Number of Parts",
+                        f"{len(df_processed):,}"
+                    )
+                with col4:
+                    st.metric(
+                        "🏢 Number of Suppliers",
+                        f"{df_processed['Supplier Name'].nunique():,}"
+                    )
+                st.markdown("</div>", unsafe_allow_html=True)
+
+                # Create tabs for different views
+                tab1, tab2, tab3 = st.tabs(["📈 Visualizations", "📋 Data Table", "🎯 Top Analysis"])
+
+                with tab1:
+                    figures = create_visualizations(df_processed)
+                    st.plotly_chart(figures[0], use_container_width=True)
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.plotly_chart(figures[1], use_container_width=True)
+                    with col2:
+                        st.plotly_chart(figures[2], use_container_width=True)
+
+                with tab2:
+                    st.dataframe(df_processed, height=400)
+                    st.markdown(get_table_download_link(df_processed), unsafe_allow_html=True)
+
+                with tab3:
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.markdown(f"""
+                        <div class='metric-card'>
+                            <h3 style='color: {SCHNEIDER_COLORS["primary_green"]}'>
+                                🏆 Top Suppliers by Savings Opportunity
+                            </h3>
+                        """, unsafe_allow_html=True)
+                        supplier_table = pd.DataFrame({
+                            'Supplier': insights['top_suppliers'].index,
+                            'Savings Opportunity (EUR)': insights['top_suppliers'].values.round(2)
+                        })
+                        st.table(supplier_table)
+                        st.markdown("</div>", unsafe_allow_html=True)
+                    
+                    with col2:
+                        st.markdown(f"""
+                        <div class='metric-card'>
+                            <h3 style='color: {SCHNEIDER_COLORS["primary_green"]}'>
+                                📊 Top Categories by Savings Opportunity
+                            </h3>
+                        """, unsafe_allow_html=True)
+                        category_table = pd.DataFrame({
+                            'Category': insights['top_categories'].index,
+                            'Savings Opportunity (EUR)': insights['top_categories'].values.round(2)
+                        })
+                        st.table(category_table)
+                        st.markdown("</div>", unsafe_allow_html=True)
+
+            else:
+                st.warning("⚠️ No data matches the filtering criteria.")
+
+        except Exception as e:
+            st.error(f"❌ Error: {str(e)}")
+            st.info("📝 Please ensure your file has the required columns and format.")
+        
+    else:
+        st.markdown("<h2>Open PO Analysis</h2>", unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        with col1:
+            open_po_file = st.file_uploader("Upload Open PO Report", type=['xlsx'])
+        with col2:
+            workbench_file = st.file_uploader("Upload Workbench Report", type=['xlsx'])
+
+        if open_po_file is not None and workbench_file is not None:
+                   try:
+                        open_po_df = pd.read_excel(
+                            open_po_file,
+                            usecols=['     ORDER_TYPE', 'LINE_TYPE', 'ITEM', 'VENDOR_NUM', 'PO_NUM', 'RELEASE_NUM', 
+                                    'LINE_NUM', 'SHIPMENT_NUM', 'AUTHORIZATION_STATUS', 'PO_SHIPMENT_CREATION_DATE',
+                                    'QTY_ELIGIBLE_TO_SHIP', 'UNIT_PRICE', 'CURRNECY']
+                        )
+                        
+                        workbench_df = pd.read_excel(
+                            workbench_file,
+                            usecols=['PART_NUMBER', 'DESCRIPTION', 'VENDOR_NUM', 'VENDOR_NAME', 'DANDB',
+                                    'STARS Category Code', 'ASL_MPN', 'UNIT_PRICE', 'CURRENCY_CODE']
+                        )
+            
+                        st.success("Files uploaded successfully!")
+            
+                        # Process data
+                        processed_df = process_data(open_po_df, workbench_df)
+                        
+                        if processed_df is not None and not processed_df.empty:
+                            # Generate insights
+                            insights = generate_insights(processed_df)
+                            
+                            if insights:
+                                # Display metrics
+                                col1, col2, col3, col4 = st.columns(4)
+                                with col1:
+                                    st.metric("Total Price Impact (EUR)", f"{insights['total_impact']:,.2f}")
+                                with col2:
+                                    st.metric("Total Open PO Value (EUR)", f"{insights['total_po_value']:,.2f}")
+                                with col3:
+                                    st.metric("Number of Parts", insights['distinct_parts_count'])
+                                with col4:
+                                    st.metric("Number of Vendors", insights['unique_vendors'])
+            
+                                # Create tabs
+                                tab1, tab2, tab3 = st.tabs(["Visualizations", "Data Table", "Top Impact Analysis"])
+            
+                                with tab1:
+                                    figures = create_visualizations(processed_df)
+                                    if figures:
+                                        col1, col2 = st.columns(2)
+                                        with col1:
+                                            st.plotly_chart(figures[0], use_container_width=True)
+                                            st.plotly_chart(figures[2], use_container_width=True)
+                                        with col2:
+                                            st.plotly_chart(figures[1], use_container_width=True)
+                                            st.plotly_chart(figures[3], use_container_width=True)
+            
+                                with tab2:
+                                    st.dataframe(processed_df)
+                                    st.markdown(get_download_link(processed_df), unsafe_allow_html=True)
+            
+                                with tab3:
+                                    col1, col2 = st.columns(2)
+                                    with col1:
+                                        st.subheader("Top Vendors by Price Impact")
+                                        st.table(pd.DataFrame({
+                                            'Vendor': insights['impact_by_vendor'].index,
+                                            'Impact (EUR)': insights['impact_by_vendor'].values.round(2)
+                                        }))
+                                    
+                                    with col2:
+                                        st.subheader("Top Categories by Price Impact")
+                                        st.table(pd.DataFrame({
+                                            'Category': insights['impact_by_category'].index,
+                                            'Impact (EUR)': insights['impact_by_category'].values.round(2)
+                                        }))
+            
+                        else:
+                            st.warning("No data matches the analysis criteria.")
+            
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
+                        st.info("Please ensure your files have the required columns and format.")
