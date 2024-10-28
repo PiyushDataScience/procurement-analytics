@@ -334,7 +334,7 @@ def get_download_link_opo(df, filename="processed_data.csv"):
 
 def main():
     st.set_page_config(
-        page_title="Schneider Electric Price Analysis",
+        page_title="Procurement Analysis",
         page_icon="⚡",
         layout="wide",
         initial_sidebar_state="expanded"
@@ -348,17 +348,12 @@ def main():
             <img src="https://www.se.com/ww/en/assets/wiztopic/615aeb0184d20b323d58575e/Schneider-Electric-logo-jpg-_original.jpg" 
                  style="width: 150px; margin-right: 20px;">
             <div>
-                <h1 style="margin: 0;">Schneider Electric Price Analysis</h1>
-                <p style="color: #3DCD58; margin: 0;">Comprehensive Price Analysis Dashboard</p>
+                <h1 style="margin: 0;">Procurement Analysis</h1>
+                <p style="color: #3DCD58; margin: 0;">India Effectiveness Team</p>
             </div>
         </div>
     """, unsafe_allow_html=True)
 
-    # Sidebar for analysis selection
-    analysis_type = st.sidebar.radio(
-        "Select Analysis Type",
-        ["Worldwide Price Analysis", "Open PO Analysis"]
-    )
     if analysis_type == "Worldwide Price Analysis":
         st.markdown("<h2>Worldwide Price Analysis</h2>", unsafe_allow_html=True)
         uploaded_file = st.file_uploader("Upload WWP Data", type=['xlsx', 'csv'])
