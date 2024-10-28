@@ -611,3 +611,8 @@ def main():
                     except Exception as e:
                         st.error(f"Error: {str(e)}")
                         st.info("Please ensure your files have the required columns and format.")
+
+
+
+if __name__ == "__main__":
+    main()
