@@ -28,88 +28,11 @@ def load_css():
         .stApp {{
             background-color: #1E1E1E;
         }}
-        .metric-card {{
-            background-color: {SCHNEIDER_COLORS['dark_green']};
-            border: 1px solid {SCHNEIDER_COLORS['primary_green']};
-            padding: 1.5rem;
-            border-radius: 0.8rem;
-            margin: 0.5rem 0;
-            transition: transform 0.3s ease;
-        }}
-        .metric-card:hover {{
-            transform: translateY(-5px);
-            box-shadow: 0 4px 15px rgba(61, 205, 88, 0.2);
-        }}
-        .stMetric {{
-            background-color: {SCHNEIDER_COLORS['dark_green']};
-            padding: 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid {SCHNEIDER_COLORS['primary_green']};
-        }}
-        .stMetric:hover {{
-            border-color: {SCHNEIDER_COLORS['accent_blue']};
-        }}
-        .stTabs [data-baseweb="tab-list"] {{
-            gap: 2rem;
-            background-color: transparent;
-        }}
-        .stTabs [data-baseweb="tab"] {{
-            color: {SCHNEIDER_COLORS['white']};
-            background-color: transparent;
-            border-radius: 4px;
-            padding: 0.5rem 1rem;
-            transition: all 0.3s ease;
-        }}
-        .stTabs [data-baseweb="tab"]:hover {{
-            color: {SCHNEIDER_COLORS['primary_green']};
-            background-color: rgba(61, 205, 88, 0.1);
-        }}
-        .stDataFrame {{
-            background-color: #2D2D2D;
-            border-radius: 0.5rem;
-            border: 1px solid {SCHNEIDER_COLORS['primary_green']};
-        }}
-        .download-link {{
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background-color: {SCHNEIDER_COLORS['primary_green']};
-            color: white;
-            text-decoration: none;
-            border-radius: 0.3rem;
-            margin: 1rem 0;
-            transition: background-color 0.3s ease;
-        }}
-        .download-link:hover {{
-            background-color: {SCHNEIDER_COLORS['dark_green']};
-        }}
-        .title-container {{
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background: linear-gradient(90deg, {SCHNEIDER_COLORS['dark_green']}, transparent);
-            border-radius: 0.5rem;
-            margin-bottom: 2rem;
-        }}
-        .upload-message {{
-            text-align: center;
-            padding: 2rem;
-            border: 2px dashed {SCHNEIDER_COLORS['primary_green']};
-            border-radius: 1rem;
-            margin: 2rem 0;
-        }}
-        .header-container {{
-            display: flex;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding: 1rem;
-            background: linear-gradient(90deg, rgba(0,79,59,0.2), transparent);
-            border-radius: 0.5rem;
-        }}
+        # ... (rest of the CSS styles)
         </style>
     """, unsafe_allow_html=True)
-  def process_dataframe_wwp(df):
-      
+
+def process_dataframe_wwp(df):
     try:
         # Rename columns
         column_mapping = {
@@ -166,9 +89,9 @@ def load_css():
     except Exception as e:
         st.error(f"Error processing data: {str(e)}")
         return None
-        pass
+
 def generate_insights_wwp(df):
-      """Generate key insights from the processed data"""
+    """Generate key insights from the processed data"""
     total_opportunity = df['Total Opportunity'].sum()
     avg_qty_projection = df['Qty/projection'].mean()
     
@@ -182,9 +105,9 @@ def generate_insights_wwp(df):
         'top_suppliers': top_suppliers,
         'top_categories': top_categories
     }
-    pass
+
 def create_visualizations_wwp(df):
-      template = {
+    template = {
         'layout': {
             'plot_bgcolor': '#1E1E1E',
             'paper_bgcolor': '#1E1E1E',
@@ -252,7 +175,6 @@ def create_visualizations_wwp(df):
     )
 
     return [fig1, fig2, fig3]
-    pass
 
 ## Open PO Anaysis 
 # Currency conversion rates (from OPO)
@@ -262,15 +184,15 @@ CONVERSION_RATES = {
     'INR': 0.011,
     'JPY': 0.0061
 }
+
 def convert_to_euro(price, currency):
     """Converts a price to Euros based on the provided currency."""
     if currency in CONVERSION_RATES:
         return price * CONVERSION_RATES[currency]
     return price  # Return original price if currency not found instead of None
-    pass
-    
+
 def process_data_opo(open_po_df, workbench_df):
-        try:
+    try:
         # Filter Open PO for LINE_TYPE = Inventory
         open_po_df = open_po_df[open_po_df['LINE_TYPE'] == 'Inventory']
         
@@ -329,10 +251,9 @@ def process_data_opo(open_po_df, workbench_df):
     except Exception as e:
         st.error(f"Error processing data: {str(e)}")
         return None
-        pass
 
 def generate_insights_opo(df):
-        """Generate key insights from the processed data"""
+    """Generate key insights from the processed data"""
     if df is None or df.empty:
         return None
         
@@ -353,9 +274,9 @@ def generate_insights_opo(df):
         'impact_by_vendor': impact_by_vendor,
         'impact_by_category': impact_by_category
     }
-    pass
+
 def create_visualizations_opo(df):
-        """Create visualizations using Plotly"""
+    """Create visualizations using Plotly"""
     if df is None or df.empty:
         return None
         
@@ -395,10 +316,8 @@ def create_visualizations_opo(df):
     )
     
     return [category_fig, vendor_fig, ig_og_fig, timeline_fig]
-    pass
 
 def main():
-    
     st.set_page_config(
         page_title="Schneider Electric Price Analysis",
         page_icon="⚡",
@@ -425,11 +344,10 @@ def main():
         "Select Analysis Type",
         ["Worldwide Price Analysis", "Open PO Analysis"]
     )
-            
     if analysis_type == "Worldwide Price Analysis":
         st.markdown("<h2>Worldwide Price Analysis</h2>", unsafe_allow_html=True)
         uploaded_file = st.file_uploader("Upload WWP Data", type=['xlsx', 'csv'])
-
+        
         if uploaded_file is not None:
         try:
             with st.spinner('Processing your data...'):
