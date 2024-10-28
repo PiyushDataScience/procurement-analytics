@@ -353,8 +353,11 @@ def main():
             </div>
         </div>
     """, unsafe_allow_html=True)
-
-     if analysis_type == "Worldwide Price Analysis":
+    analysis_type = st.sidebar.radio(
+        "Select Analysis Type",
+        ["Worldwide Price Analysis", "Open PO Analysis"]
+    )
+    if analysis_type == "Worldwide Price Analysis":
         st.markdown("<h2>Worldwide Price Analysis</h2>", unsafe_allow_html=True)
         uploaded_file = st.file_uploader("Upload WWP Data", type=['xlsx', 'csv'])
         
