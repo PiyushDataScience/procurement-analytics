@@ -175,6 +175,12 @@ def create_visualizations_wwp(df):
     )
 
     return [fig1, fig2, fig3]
+def get_table_download_link_wwp(df):
+    """Generate a styled download link for the processed data"""
+    csv = df.to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()
+    href = f'<a href="data:file/csv;base64,{b64}" download="processed_data.csv" class="download-link">📥 Download Processed Data</a>'
+    return href
 
 ## Open PO Anaysis 
 # Currency conversion rates (from OPO)
@@ -317,6 +323,15 @@ def create_visualizations_opo(df):
     
     return [category_fig, vendor_fig, ig_og_fig, timeline_fig]
 
+def get_download_link_opo(df, filename="processed_data.csv"):
+    """Generate a download link for the processed data"""
+    if df is None or df.empty:
+        return ""
+    csv = df.to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()
+    href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">Download {filename}</a>'
+    return href
+
 def main():
     st.set_page_config(
         page_title="Schneider Electric Price Analysis",
@@ -407,7 +422,7 @@ def main():
     
                     with tab2:
                         st.dataframe(df_processed, height=400)
-                        st.markdown(get_table_download_link(df_processed), unsafe_allow_html=True)
+                        st.markdown(get_table_download_link_wwp(df_processed), unsafe_allow_html=True)
     
                     with tab3:
                         col1, col2 = st.columns(2)
@@ -506,7 +521,7 @@ def main():
                 
                                     with tab2:
                                         st.dataframe(processed_df)
-                                        st.markdown(get_download_link(processed_df), unsafe_allow_html=True)
+                                        st.markdown(get_download_link_opo(processed_df), unsafe_allow_html=True)
                 
                                     with tab3:
                                         col1, col2 = st.columns(2)
