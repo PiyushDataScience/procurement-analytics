@@ -396,7 +396,7 @@ def main():
                     tab1, tab2, tab3 = st.tabs(["📈 Visualizations", "📋 Data Table", "🎯 Top Analysis"])
     
                     with tab1:
-                        figures = create_visualizations(df_processed)
+                        figures = create_visualizations_wwp(df_processed)
                         st.plotly_chart(figures[0], use_container_width=True)
                         
                         col1, col2 = st.columns(2)
