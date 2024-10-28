@@ -252,3 +252,80 @@ def create_visualizations_wwp(df):
 
     return [fig1, fig2, fig3]
     pass
+
+## Open PO Anaysis 
+# Currency conversion rates (from OPO)
+CONVERSION_RATES = {
+    'USD': 0.93,
+    'GBP': 1.2,
+    'INR': 0.011,
+    'JPY': 0.0061
+}
+def convert_to_euro(price, currency):
+    """Converts a price to Euros based on the provided currency."""
+    if currency in CONVERSION_RATES:
+        return price * CONVERSION_RATES[currency]
+    return price  # Return original price if currency not found instead of None
+    pass
+    
+def process_data_opo(open_po_df, workbench_df):
+        try:
+        # Filter Open PO for LINE_TYPE = Inventory
+        open_po_df = open_po_df[open_po_df['LINE_TYPE'] == 'Inventory']
+        
+        # Clean up column names before merge
+        open_po_df.columns = open_po_df.columns.str.strip()
+        workbench_df.columns = workbench_df.columns.str.strip()
+        
+        # Rename UNIT_PRICE columns before merge to avoid confusion
+        open_po_df = open_po_df.rename(columns={'UNIT_PRICE': 'UNIT_PRICE_OPO'})
+        workbench_df = workbench_df.rename(columns={'UNIT_PRICE': 'UNIT_PRICE_WB'})
+        
+        # Merge dataframes
+        merged_df = pd.merge(
+            workbench_df,
+            open_po_df,
+            left_on=['PART_NUMBER', 'VENDOR_NUM'],
+            right_on=['ITEM', 'VENDOR_NUM'],
+            how='inner'
+        )
+        
+        # Drop redundant column
+        merged_df = merged_df.drop('ITEM', axis=1)
+        
+        # Rename columns
+        merged_df = merged_df.rename(columns={
+            'DANDB': 'VENDOR_DUNS',
+            'CURRENCY_CODE': 'CURRENCY_CODE_WB',
+            'CURRNECY': 'CURRENCY_CODE_OPO'  # Fixed typo in CURRENCY
+        })
+        
+        # Add IG/OG classification
+        merged_df['IG/OG'] = merged_df['VENDOR_NAME'].apply(
+            lambda x: 'IG' if 'SCHNEIDER' in str(x).upper() or 'WUXI' in str(x).upper() else 'OG'
+        )
+        
+        # Add PO Year
+        merged_df['PO Year'] = pd.to_datetime(merged_df['PO_SHIPMENT_CREATION_DATE']).dt.year
+        
+        # Convert prices to EUR
+        merged_df['UNIT_PRICE_WB_EUR'] = merged_df.apply(
+            lambda row: convert_to_euro(row['UNIT_PRICE_WB'], row['CURRENCY_CODE_WB']), axis=1
+        )
+        merged_df['UNIT_PRICE_OPO_EUR'] = merged_df.apply(
+            lambda row: convert_to_euro(row['UNIT_PRICE_OPO'], row['CURRENCY_CODE_OPO']), axis=1
+        )
+        
+        # Calculate metrics
+        merged_df['Price_Delta'] = merged_df['UNIT_PRICE_OPO_EUR'] - merged_df['UNIT_PRICE_WB_EUR']
+        merged_df['Impact in Euros'] = merged_df['Price_Delta'] * merged_df['QTY_ELIGIBLE_TO_SHIP']
+        merged_df['Open PO Value'] = merged_df['QTY_ELIGIBLE_TO_SHIP'] * merged_df['UNIT_PRICE_OPO_EUR']
+        
+        # Sort by impact
+        merged_df = merged_df.sort_values('Impact in Euros', ascending=False)
+        
+        return merged_df
+    except Exception as e:
+        st.error(f"Error processing data: {str(e)}")
+        return None
+        pass
