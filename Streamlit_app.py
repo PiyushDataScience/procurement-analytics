@@ -494,7 +494,7 @@ def main():
                                     tab1, tab2, tab3 = st.tabs(["Visualizations", "Data Table", "Top Impact Analysis"])
                 
                                     with tab1:
-                                        figures = create_visualizations(processed_df)
+                                        figures = create_visualizations_opo(processed_df)
                                         if figures:
                                             col1, col2 = st.columns(2)
                                             with col1:
