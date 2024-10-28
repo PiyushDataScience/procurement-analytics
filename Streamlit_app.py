@@ -360,7 +360,7 @@ def main():
                 st.success("✅ File uploaded and processed successfully!")
     
                 # Process data
-                df_processed = process_dataframe(df)
+                df_processed = process_dataframe_wwp(df)
                 
                 if df_processed is not None and not df_processed.empty:
                     # Generate insights
