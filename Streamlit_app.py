@@ -472,7 +472,7 @@ def main():
                             st.success("Files uploaded successfully!")
                 
                             # Process data
-                            processed_df = process_data(open_po_df, workbench_df)
+                            processed_df = process_data_opo(open_po_df, workbench_df)
                             
                             if processed_df is not None and not processed_df.empty:
                                 # Generate insights
