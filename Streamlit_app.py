@@ -476,7 +476,7 @@ def main():
                             
                             if processed_df is not None and not processed_df.empty:
                                 # Generate insights
-                                insights = generate_insights(processed_df)
+                                insights = generate_insights_opo(processed_df)
                                 
                                 if insights:
                                     # Display metrics
