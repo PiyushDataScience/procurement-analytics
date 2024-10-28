@@ -329,3 +329,70 @@ def process_data_opo(open_po_df, workbench_df):
         st.error(f"Error processing data: {str(e)}")
         return None
         pass
+
+def generate_insights_opo(df):
+        """Generate key insights from the processed data"""
+    if df is None or df.empty:
+        return None
+        
+    total_impact = df['Impact in Euros'].sum()
+    total_po_value = df['Open PO Value'].sum()
+    distinct_parts_count = df['PART_NUMBER'].nunique() 
+    unique_vendors = df['VENDOR_NAME'].nunique()
+    
+    # Group by analyses
+    impact_by_vendor = df.groupby('VENDOR_NAME')['Impact in Euros'].sum().sort_values(ascending=False).head(5)
+    impact_by_category = df.groupby('STARS Category Code')['Impact in Euros'].sum().sort_values(ascending=False).head(5)
+    
+    return {
+        'total_impact': total_impact,
+        'total_po_value': total_po_value,
+        'distinct_parts_count': distinct_parts_count,
+        'unique_vendors': unique_vendors,
+        'impact_by_vendor': impact_by_vendor,
+        'impact_by_category': impact_by_category
+    }
+    pass
+def create_visualizations_opo(df):
+        """Create visualizations using Plotly"""
+    if df is None or df.empty:
+        return None
+        
+    # Impact by Category
+    category_fig = px.bar(
+        df.groupby('STARS Category Code')['Impact in Euros'].sum().sort_values(ascending=False).head(10).reset_index(),
+        x='Impact in Euros',
+        y='STARS Category Code',
+        title='Price Impact by Category (EUR)',
+        orientation='h'
+    )
+    category_fig.update_layout(height=500)
+    
+    # Impact by Vendor (Top 10)
+    vendor_fig = px.pie(
+        df.groupby('VENDOR_NAME')['Impact in Euros'].sum().sort_values(ascending=False).head(10).reset_index(),
+        values='Impact in Euros',
+        names='VENDOR_NAME',
+        title='Top 10 Vendors by Price Impact'
+    )
+    
+    # Impact by IG/OG
+    ig_og_fig = px.bar(
+        df.groupby('IG/OG')['Impact in Euros'].sum().reset_index(),
+        x='IG/OG',
+        y='Impact in Euros',
+        title='Price Impact by IG/OG Classification',
+        color='IG/OG'
+    )
+    
+    # Timeline of PO Creation
+    timeline_fig = px.line(
+        df.groupby('PO_SHIPMENT_CREATION_DATE')['Impact in Euros'].sum().reset_index(),
+        x='PO_SHIPMENT_CREATION_DATE',
+        y='Impact in Euros',
+        title='Price Impact Timeline'
+    )
+    
+    return [category_fig, vendor_fig, ig_og_fig, timeline_fig]
+    pass
+
