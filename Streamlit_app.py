@@ -109,7 +109,8 @@ def load_css():
         </style>
     """, unsafe_allow_html=True)
   def process_dataframe_wwp(df):
-        try:
+      
+    try:
         # Rename columns
         column_mapping = {
             'Part Number (Standardized)': 'Part Number',
