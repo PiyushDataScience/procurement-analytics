@@ -527,12 +527,9 @@ def main():
                             else:
                                 st.warning("No data matches the analysis criteria.")
                 
-                        except Exception as e:
-                             
-                             st.error(f"Error: {str(e)}")
-                             st.info("Please ensure your files have the required columns and format.")
-
-
-
+                       except Exception as e:
+                           st.error(f"Error: {str(e)}")
+                           st.info("Please ensure your files have the required columns and format.")
+            
 if __name__ == "__main__":
     main()
